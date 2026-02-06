@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Data Engineering Learning Journey</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 900px;
+            width: 100%;
+        }
+        
+        .header {
+            background: white;
+            padding: 50px;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        
+        .header h1 {
+            color: #667eea;
+            font-size: 3em;
+            margin-bottom: 15px;
+        }
+        
+        .header p {
+            color: #666;
+            font-size: 1.3em;
+            margin-bottom: 10px;
+        }
+        
+        .stats {
+            display: flex;
+            justify-content: center;
+            gap: 40px;
+            margin-top: 30px;
+        }
+        
+        .stat-item {
+            text-align: center;
+        }
+        
+        .stat-number {
+            font-size: 3em;
+            font-weight: bold;
+            color: #e25822;
+        }
+        
+        .stat-label {
+            color: #999;
+            margin-top: 5px;
+        }
+        
+        .topics-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 25px;
+            margin-bottom: 30px;
+        }
+        
+        .topic-card {
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            transition: all 0.3s;
+            cursor: pointer;
+            text-decoration: none;
+            color: inherit;
+            display: block;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .topic-card:before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 5px;
+            background: linear-gradient(90deg, #e25822, #f39c12);
+        }
+        
+        .topic-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 15px 40px rgba(0,0,0,0.3);
+        }
+        
+        .topic-icon {
+            font-size: 3em;
+            margin-bottom: 15px;
+        }
+        
+        .topic-title {
+            font-size: 1.5em;
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 10px;
+        }
+        
+        .topic-description {
+            color: #666;
+            line-height: 1.6;
+            margin-bottom: 15px;
+        }
+        
+        .topic-meta {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding-top: 15px;
+            border-top: 1px solid #eee;
+        }
+        
+        .topic-date {
+            color: #999;
+            font-size: 0.9em;
+        }
+        
+        .topic-status {
+            background: #4caf50;
+            color: white;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 0.9em;
+            font-weight: bold;
+        }
+        
+        .coming-soon {
+            opacity: 0.6;
+            cursor: default;
+        }
+        
+        .coming-soon .topic-status {
+            background: #999;
+        }
+        
+        .coming-soon:hover {
+            transform: none;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+        
+        .footer {
+            background: white;
+            padding: 25px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            text-align: center;
+        }
+        
+        .footer p {
+            color: #666;
+            margin-bottom: 15px;
+        }
+        
+        .progress-section {
+            margin-top: 20px;
+        }
+        
+        .progress-bar {
+            width: 100%;
+            height: 12px;
+            background: #e0e0e0;
+            border-radius: 10px;
+            overflow: hidden;
+            margin-top: 10px;
+        }
+        
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #4caf50, #8bc34a);
+            width: 10%;
+            border-radius: 10px;
+            transition: width 0.5s;
+        }
+        
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        .topic-card {
+            animation: fadeIn 0.5s ease-out;
+        }
+        
+        .topic-card:nth-child(2) {
+            animation-delay: 0.1s;
+        }
+        
+        .topic-card:nth-child(3) {
+            animation-delay: 0.2s;
+        }
+        
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 2em;
+            }
+            
+            .stats {
+                flex-direction: column;
+                gap: 20px;
+            }
+            
+            .topics-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>📚 Data Engineering Journey</h1>
+            <p>Building Knowledge, One Topic at a Time</p>
+            
+            <div class="stats">
+                <div class="stat-item">
+                    <div class="stat-number">1</div>
+                    <div class="stat-label">Topics Learned</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-number">11</div>
+                    <div class="stat-label">Concepts Mastered</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-number">∞</div>
+                    <div class="stat-label">More to Learn</div>
+                </div>
+            </div>
+            
+            <div class="progress-section">
+                <p style="color: #999; margin-top: 20px;">Your Learning Progress</p>
+                <div class="progress-bar">
+                    <div class="progress-fill"></div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="topics-grid">
+            <a href="spark-day1.html" class="topic-card">
+                <div class="topic-icon">🔥</div>
+                <div class="topic-title">Apache Spark - Day 1</div>
+                <div class="topic-description">
+                    Learn the fundamentals: RDD, lazy evaluation, transformations vs actions, DAG, and why Spark is 100x faster than MapReduce.
+                </div>
+                <div class="topic-meta">
+                    <div class="topic-date">Day 1 - Completed</div>
+                    <div class="topic-status">✓ Done</div>
+                </div>
+            </a>
+            
+            <div class="topic-card coming-soon">
+                <div class="topic-icon">📊</div>
+                <div class="topic-title">Apache Kafka</div>
+                <div class="topic-description">
+                    Coming soon! Real-time data streaming, producers, consumers, and building event-driven architectures.
+                </div>
+                <div class="topic-meta">
+                    <div class="topic-date">Upcoming</div>
+                    <div class="topic-status">Soon</div>
+                </div>
+            </div>
+            
+            <div class="topic-card coming-soon">
+                <div class="topic-icon">🔄</div>
+                <div class="topic-title">Apache Airflow</div>
+                <div class="topic-description">
+                    Coming soon! Workflow orchestration, DAGs, scheduling, and building robust data pipelines.
+                </div>
+                <div class="topic-meta">
+                    <div class="topic-date">Upcoming</div>
+                    <div class="topic-status">Soon</div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="footer">
+            <p><strong>🚀 Keep Learning!</strong></p>
+            <p>Each time you study a new topic, upload your notes and I'll create a beautiful interactive page like the Spark one above.</p>
+            <p style="margin-top: 15px; color: #999; font-size: 0.9em;">
+                Built with passion for learning 💙
+            </p>
+        </div>
+    </div>
+    
+    <script>
+        // Update progress bar based on completed topics
+        const totalTopics = 10; // Adjust this as you add more topics
+        const completedTopics = 1;
+        const progress = (completedTopics / totalTopics) * 100;
+        document.querySelector('.progress-fill').style.width = progress + '%';
+    </script>
+</body>
+</html>
