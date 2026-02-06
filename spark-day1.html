@@ -882,10 +882,440 @@
             </div>
         </div>
 
+        <!-- Section 12: Read & Write Operations -->
+        <div class="section">
+            <h2>1️⃣2️⃣ Read & Write Operations - Transformation or Action?</h2>
+            
+            <div class="comparison">
+                <div class="comparison-box spark-box">
+                    <h3>📖 Read Operations (Complex!)</h3>
+                    <p><strong>Can behave as BOTH transformation and action depending on arguments:</strong></p>
+                    <ul style="margin-top: 10px;">
+                        <li><strong>Lazily evaluated:</strong> With explicit schema - no job triggered</li>
+                        <li><strong>Eagerly evaluated:</strong> With inferSchema=True - jobs triggered immediately!</li>
+                    </ul>
+                </div>
+                
+                <div class="comparison-box hadoop-box">
+                    <h3>💾 Write Operations</h3>
+                    <ul>
+                        <li>Always considered <strong>ACTIONS</strong></li>
+                        <li>Trigger computation immediately</li>
+                        <li>Write data to external systems</li>
+                    </ul>
+                </div>
+            </div>
+            
+            <button class="collapsible">Read CSV - Three Different Behaviors 🔍</button>
+            <div class="content">
+                <div class="content-inner">
+                    <h4>Scenario 1: No schema, inferSchema=False</h4>
+                    <div style="background: white; padding: 15px; border-radius: 5px; margin: 10px 0; font-family: monospace; font-size: 0.9em;">
+df = spark.read.csv('data.csv', header=True)
+                    </div>
+                    <p>✅ Creates <strong>1 job</strong> to read first line and determine column names (all columns as strings)</p>
+                    
+                    <h4 style="margin-top: 20px;">Scenario 2: inferSchema=True</h4>
+                    <div style="background: white; padding: 15px; border-radius: 5px; margin: 10px 0; font-family: monospace; font-size: 0.9em;">
+df = spark.read.csv('data.csv', header=True, inferSchema=True)
+                    </div>
+                    <p>⚠️ Creates <strong>2 jobs</strong>: One to read headers + One to scan entire file and infer data types</p>
+                    
+                    <h4 style="margin-top: 20px;">Scenario 3: Explicit Schema (BEST PRACTICE!)</h4>
+                    <div style="background: white; padding: 15px; border-radius: 5px; margin: 10px 0; font-family: monospace; font-size: 0.9em;">
+from pyspark.sql.types import StructType, StructField, StringType, IntegerType
+
+schema = StructType([
+    StructField("name", StringType(), True),
+    StructField("age", IntegerType(), True)
+])
+
+df = spark.read.csv('data.csv', header=True, schema=schema)
+                    </div>
+                    <p>🚀 Creates <strong>0 jobs</strong> - Fully lazy! Validation happens only when action is called</p>
+                </div>
+            </div>
+            
+            <div class="analogy-box">
+                <h4>💡 Real-World Analogy</h4>
+                <p><strong>No schema:</strong> Quickly glancing at the first page of a book to see chapter titles.</p>
+                <p><strong>inferSchema:</strong> Reading the entire book to understand its structure before starting.</p>
+                <p><strong>Explicit schema:</strong> Someone already told you what the book contains—you can start immediately!</p>
+            </div>
+        </div>
+
+        <!-- Section 13: Spark Architecture -->
+        <div class="section">
+            <h2>1️⃣3️⃣ Spark Architecture & Components</h2>
+            
+            <div class="diagram">
+                <h4>Spark Application Flow</h4>
+                <div style="background: white; padding: 30px; border-radius: 10px; text-align: left;">
+                    <div style="display: flex; flex-direction: column; gap: 20px;">
+                        <div style="background: #e3f2fd; padding: 20px; border-radius: 8px; border-left: 5px solid #2196f3;">
+                            <strong>1. Driver Program</strong>
+                            <p style="margin-top: 10px;">Runs main() function, creates SparkContext, defines transformations & actions</p>
+                        </div>
+                        <div style="text-align: center; font-size: 2em;">↓</div>
+                        <div style="background: #fff3e0; padding: 20px; border-radius: 8px; border-left: 5px solid #ff9800;">
+                            <strong>2. SparkContext</strong>
+                            <p style="margin-top: 10px;">Connects to Cluster Manager, coordinates execution</p>
+                        </div>
+                        <div style="text-align: center; font-size: 2em;">↓</div>
+                        <div style="background: #f3e5f5; padding: 20px; border-radius: 8px; border-left: 5px solid #9c27b0;">
+                            <strong>3. Cluster Manager</strong>
+                            <p style="margin-top: 10px;">Allocates resources (CPU, memory) across cluster</p>
+                        </div>
+                        <div style="text-align: center; font-size: 2em;">↓</div>
+                        <div style="background: #e8f5e9; padding: 20px; border-radius: 8px; border-left: 5px solid #4caf50;">
+                            <strong>4. Executors</strong>
+                            <p style="margin-top: 10px;">Run tasks, provide in-memory storage for RDDs</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <button class="collapsible">Detailed Component Breakdown 🏗️</button>
+            <div class="content">
+                <div class="content-inner">
+                    <h4>📋 Driver Program</h4>
+                    <ul style="list-style-type: disc; padding-left: 30px;">
+                        <li>The heart of your Spark application</li>
+                        <li>Runs the main() function</li>
+                        <li>Creates SparkContext</li>
+                        <li>Defines datasets and operations (transformations & actions)</li>
+                    </ul>
+                    
+                    <h4 style="margin-top: 20px;">🔌 SparkContext</h4>
+                    <ul style="list-style-type: disc; padding-left: 30px;">
+                        <li>Main entry point for Spark functionality</li>
+                        <li>Represents connection to Spark cluster</li>
+                        <li>Creates RDDs, accumulators, broadcast variables</li>
+                    </ul>
+                    
+                    <h4 style="margin-top: 20px;">🎛️ Cluster Manager</h4>
+                    <ul style="list-style-type: disc; padding-left: 30px;">
+                        <li>Allocates resources across the cluster</li>
+                        <li>Types: Standalone, YARN, Mesos, Kubernetes</li>
+                        <li>Manages worker nodes and resource distribution</li>
+                    </ul>
+                    
+                    <h4 style="margin-top: 20px;">⚙️ Executors</h4>
+                    <ul style="list-style-type: disc; padding-left: 30px;">
+                        <li>Worker node processes that run tasks</li>
+                        <li>Run concurrently across different nodes</li>
+                        <li>Execute tasks sent by driver</li>
+                        <li>Provide in-memory storage for RDDs (cache/persist)</li>
+                    </ul>
+                    
+                    <h4 style="margin-top: 20px;">📊 DAG Scheduler</h4>
+                    <ul style="list-style-type: disc; padding-left: 30px;">
+                        <li>Divides operator graph into stages</li>
+                        <li>Optimizes execution plan (pipeline fusion)</li>
+                        <li>Splits jobs at shuffle boundaries (wide transformations)</li>
+                        <li>Sends stages to Task Scheduler</li>
+                    </ul>
+                    
+                    <h4 style="margin-top: 20px;">📅 Task Scheduler</h4>
+                    <ul style="list-style-type: disc; padding-left: 30px;">
+                        <li>Launches tasks via cluster manager</li>
+                        <li>Sends tasks to executor JVMs</li>
+                        <li>One task per partition per stage</li>
+                        <li>Runs tasks in parallel where possible</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- Section 14: Deployment Modes -->
+        <div class="section">
+            <h2>1️⃣4️⃣ Spark Deployment Modes</h2>
+            
+            <div class="toggle-container">
+                <div class="toggle-btn active" onclick="toggleDeployment('client')">
+                    Client Mode
+                </div>
+                <div class="toggle-btn" onclick="toggleDeployment('cluster')">
+                    Cluster Mode
+                </div>
+                <div class="toggle-btn" onclick="toggleDeployment('local')">
+                    Local Mode
+                </div>
+            </div>
+            
+            <div id="client-mode" class="toggle-content active">
+                <h4>💻 Client Mode</h4>
+                <div style="background: white; padding: 20px; border-radius: 10px; margin-top: 15px;">
+                    <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 600 300'%3E%3Crect fill='%23f5f5f5' width='600' height='300'/%3E%3Ctext x='300' y='150' font-size='20' text-anchor='middle' fill='%23666'%3EClient Mode Diagram%3C/text%3E%3C/svg%3E" alt="Client Mode" style="width: 100%; border-radius: 5px;">
+                </div>
+                <ul style="list-style-type: disc; padding-left: 30px; margin-top: 15px;">
+                    <li><strong>Driver runs on your local machine</strong> (where you submit the application)</li>
+                    <li>Application Master acts as Executor Launcher only</li>
+                    <li>Executors communicate directly with Driver on your machine</li>
+                    <li><strong>Best for:</strong> Interactive development, testing, debugging</li>
+                    <li><strong>Drawback:</strong> Your machine must stay connected; network traffic to/from your machine</li>
+                </ul>
+                <div style="background: #fff3cd; padding: 15px; border-radius: 8px; margin-top: 15px;">
+                    ⚠️ <strong>Use Case:</strong> Running spark-shell or jupyter notebooks for interactive analysis
+                </div>
+            </div>
+            
+            <div id="cluster-mode" class="toggle-content">
+                <h4>🏢 Cluster Mode</h4>
+                <div style="background: white; padding: 20px; border-radius: 10px; margin-top: 15px;">
+                    <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 600 300'%3E%3Crect fill='%23f5f5f5' width='600' height='300'/%3E%3Ctext x='300' y='150' font-size='20' text-anchor='middle' fill='%23666'%3ECluster Mode Diagram%3C/text%3E%3C/svg%3E" alt="Cluster Mode" style="width: 100%; border-radius: 5px;">
+                </div>
+                <ul style="list-style-type: disc; padding-left: 30px; margin-top: 15px;">
+                    <li><strong>Driver runs inside Application Master</strong> (inside the cluster)</li>
+                    <li>Application Master creates driver and manages execution</li>
+                    <li>Driver communicates with Resource Manager for executors</li>
+                    <li><strong>Best for:</strong> Production jobs, scheduled applications</li>
+                    <li><strong>Advantage:</strong> No dependency on client machine; better for long-running jobs</li>
+                </ul>
+                <div style="background: #d4edda; padding: 15px; border-radius: 8px; margin-top: 15px;">
+                    ✅ <strong>Use Case:</strong> Automated ETL jobs, scheduled batch processing
+                </div>
+            </div>
+            
+            <div id="local-mode" class="toggle-content">
+                <h4>🖥️ Local Mode</h4>
+                <ul style="list-style-type: disc; padding-left: 30px; margin-top: 15px;">
+                    <li><strong>Everything runs on a single machine</strong></li>
+                    <li>Uses all cores of your machine (or specify with local[n])</li>
+                    <li>No cluster required - simulates distributed processing</li>
+                    <li><strong>Best for:</strong> Testing, debugging, learning, development</li>
+                    <li><strong>Limitation:</strong> Can only handle data that fits on one machine</li>
+                </ul>
+                <div style="background: white; padding: 15px; border-radius: 5px; margin-top: 15px; font-family: monospace; font-size: 0.9em;">
+spark = SparkSession.builder \
+    .master("local[4]") \  # Use 4 cores
+    .appName("MyApp") \
+    .getOrCreate()
+                </div>
+                <div style="background: #e3f2fd; padding: 15px; border-radius: 8px; margin-top: 15px;">
+                    💡 <strong>Use Case:</strong> Writing and testing Spark code on your laptop before deploying to cluster
+                </div>
+            </div>
+        </div>
+
+        <!-- Section 15: Cluster Manager Types -->
+        <div class="section">
+            <h2>1️⃣5️⃣ Spark with Different Cluster Managers</h2>
+            
+            <button class="collapsible">Standalone Cluster Manager 🔧</button>
+            <div class="content">
+                <div class="content-inner">
+                    <h4>Simple Built-in Cluster Manager</h4>
+                    <ul style="list-style-type: disc; padding-left: 30px;">
+                        <li><strong>Master Node:</strong> Entry point, manages workers, distributes tasks</li>
+                        <li><strong>Worker Nodes:</strong> Run executor JVMs, execute tasks</li>
+                        <li>Communicates via heartbeats to check worker health</li>
+                        <li><strong>Best for:</strong> Simple deployments, learning, small clusters</li>
+                    </ul>
+                </div>
+            </div>
+            
+            <button class="collapsible">YARN Cluster Manager 🏗️</button>
+            <div class="content">
+                <div class="content-inner">
+                    <h4>Hadoop's Resource Manager (Most Common in Production)</h4>
+                    
+                    <h5 style="margin-top: 15px;">YARN Components:</h5>
+                    <ul style="list-style-type: disc; padding-left: 30px;">
+                        <li><strong>Resource Manager:</strong> Controls allocation of resources (CPU, memory) across all applications</li>
+                        <li><strong>Node Manager:</strong> Monitors containers on each node, reports to Resource Manager</li>
+                        <li><strong>Application Master:</strong> Orchestrates execution for individual Spark application</li>
+                        <li><strong>Containers:</strong> Isolated execution environments for tasks</li>
+                    </ul>
+                    
+                    <h5 style="margin-top: 20px;">How it Works:</h5>
+                    <ol style="padding-left: 30px; margin-top: 10px;">
+                        <li>Driver requests resources from YARN Resource Manager</li>
+                        <li>Resource Manager creates Application Master container</li>
+                        <li>Application Master requests executor containers</li>
+                        <li>Resource Manager allocates containers on Node Managers</li>
+                        <li>Executors start and communicate with Driver</li>
+                    </ol>
+                    
+                    <div style="background: #d4edda; padding: 15px; border-radius: 8px; margin-top: 15px;">
+                        ✅ <strong>Advantage:</strong> Share cluster resources with other Hadoop applications (MapReduce, Hive, etc.)
+                    </div>
+                </div>
+            </div>
+            
+            <div class="analogy-box">
+                <h4>💡 Real-World Analogy</h4>
+                <p><strong>Standalone:</strong> A small company where the CEO (Master) directly manages all employees (Workers).</p>
+                <p><strong>YARN:</strong> A large corporation with an HR department (Resource Manager) that allocates people to different projects (Applications).</p>
+            </div>
+        </div>
+
+        <!-- Section 16: Handling Large Data -->
+        <div class="section">
+            <h2>1️⃣6️⃣ What If Data Is Larger Than Cluster Memory?</h2>
+            
+            <div style="background: #fff3cd; padding: 20px; border-radius: 10px; margin-bottom: 20px;">
+                <h4 style="color: #856404;">Scenario: 60 GB data with 30 GB cluster memory</h4>
+                <p>Can Spark handle it? <strong>YES!</strong> Here's how:</p>
+            </div>
+            
+            <button class="collapsible">Spark's Strategy for Large Data 💾</button>
+            <div class="content">
+                <div class="content-inner">
+                    <h4>1. Data Partitioning</h4>
+                    <p>Spark divides 60 GB into many small partitions (e.g., 128MB each = ~469 partitions)</p>
+                    
+                    <h4 style="margin-top: 20px;">2. Loading Into Memory</h4>
+                    <p>Loads only as many partitions as fit in 30 GB memory, processes them</p>
+                    
+                    <h4 style="margin-top: 20px;">3. Spill to Disk (When Memory Full)</h4>
+                    <ul style="list-style-type: disc; padding-left: 30px;">
+                        <li>When memory fills up, Spark writes intermediate data to disk</li>
+                        <li>This is called <strong>"spilling"</strong></li>
+                        <li>Slower than in-memory, but allows processing large datasets</li>
+                    </ul>
+                    
+                    <h4 style="margin-top: 20px;">4. On-Disk Computation</h4>
+                    <p>Spark can perform computations on spilled data stored on disk</p>
+                    
+                    <h4 style="margin-top: 20px;">5. Sequential Stage Processing</h4>
+                    <p>Stages execute sequentially - only current stage data needs to be in memory</p>
+                    
+                    <div style="background: #e3f2fd; padding: 15px; border-radius: 8px; margin-top: 20px;">
+                        💡 <strong>Key Point:</strong> Spark doesn't load entire 60 GB at once! It processes partitions incrementally.
+                    </div>
+                </div>
+            </div>
+            
+            <div class="analogy-box">
+                <h4>💡 Real-World Analogy</h4>
+                <p>Imagine washing 100 dishes with a small sink. You don't need a sink big enough for all 100 dishes! You wash 10 at a time, dry them, stack them, then wash the next 10. Spark does the same with data partitions.</p>
+            </div>
+        </div>
+
+        <!-- Section 17: Practical Example -->
+        <div class="section">
+            <h2>1️⃣7️⃣ Real Code Example - Job, Stage & Task Breakdown</h2>
+            
+            <div style="background: white; padding: 20px; border-radius: 10px; font-family: monospace; font-size: 0.85em; overflow-x: auto;">
+<pre style="margin: 0;">
+from pyspark.sql import SparkSession
+
+# Initialize Spark
+spark = SparkSession.builder.appName("Example").getOrCreate()
+
+# Read CSV files (with inferSchema=True)
+employees = spark.read.csv('employees.csv', inferSchema=True, header=True)  # Job 0 & 1
+departments = spark.read.csv('departments.csv', inferSchema=True, header=True)  # Job 2 & 3
+regions = spark.read.csv('regions.csv', inferSchema=True, header=True)  # Job 4 & 5
+
+# Narrow transformation: Filter
+filtered_employees = employees.filter(employees.age > 30)  # Lazy - no job yet
+
+# Wide transformation: Join
+result = filtered_employees.join(departments, 
+                                 filtered_employees.dept_id == departments.dept_id)  # Lazy
+
+# Another wide transformation: Join with regions
+result_with_regions = result.join(regions, result.region_id == regions.region_id)  # Lazy
+
+# ACTION: Collect (triggers Job 6)
+result_list = result_with_regions.collect()
+
+# Narrow transformation: Select
+selected_data = result_with_regions.select('employee_name', 'department_name', 'region_name')
+
+# ACTION: Write (triggers Job 7)
+selected_data.write.csv('result.csv')
+
+spark.stop()
+</pre>
+            </div>
+            
+            <button class="collapsible">Job & Stage Breakdown 🔍</button>
+            <div class="content">
+                <div class="content-inner">
+                    <h4>Jobs Created:</h4>
+                    <div style="background: #f5f5f5; padding: 15px; border-radius: 8px; margin-top: 10px;">
+                        <p><strong>Job 0 & 1:</strong> Read employees.csv + infer schema (2 jobs)</p>
+                        <p><strong>Job 2 & 3:</strong> Read departments.csv + infer schema (2 jobs)</p>
+                        <p><strong>Job 4 & 5:</strong> Read regions.csv + infer schema (2 jobs)</p>
+                        <p style="margin-top: 15px;"><strong>Job 6:</strong> Triggered by collect() - Contains 3 stages:</p>
+                        <ul style="padding-left: 30px; margin-top: 5px;">
+                            <li>Stage 0: Filter on employees (narrow)</li>
+                            <li>Stage 1: Join filtered_employees + departments (wide - shuffle!)</li>
+                            <li>Stage 2: Join result + regions (wide - shuffle!)</li>
+                        </ul>
+                        <p style="margin-top: 15px;"><strong>Job 7:</strong> Triggered by write.csv() - Contains 1 stage:</p>
+                        <ul style="padding-left: 30px; margin-top: 5px;">
+                            <li>Stage 0: Select + Write (narrow transformations, no shuffle needed)</li>
+                        </ul>
+                    </div>
+                    
+                    <div style="background: #fff3cd; padding: 15px; border-radius: 8px; margin-top: 20px;">
+                        ⚠️ <strong>Key Insight:</strong> Each wide transformation (join) creates a new stage because it requires shuffling data across partitions!
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Section 18: Spark Ecosystem -->
+        <div class="section">
+            <h2>1️⃣8️⃣ Spark Ecosystem - Beyond Core</h2>
+            
+            <div class="diagram">
+                <h4>Complete Spark Stack</h4>
+                <div style="background: white; padding: 30px; border-radius: 10px;">
+                    <div style="text-align: center; margin-bottom: 20px;">
+                        <div style="background: #e25822; color: white; padding: 15px; border-radius: 8px; font-size: 1.3em; font-weight: bold;">
+                            Spark Core (RDDs, Scheduling, Memory Management)
+                        </div>
+                    </div>
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px;">
+                        <div style="background: #e3f2fd; padding: 15px; border-radius: 8px; text-align: center;">
+                            <strong>Spark SQL</strong><br>
+                            <small>SQL queries on DataFrames</small>
+                        </div>
+                        <div style="background: #f3e5f5; padding: 15px; border-radius: 8px; text-align: center;">
+                            <strong>Spark Streaming</strong><br>
+                            <small>Real-time data processing</small>
+                        </div>
+                        <div style="background: #e8f5e9; padding: 15px; border-radius: 8px; text-align: center;">
+                            <strong>MLlib</strong><br>
+                            <small>Machine Learning library</small>
+                        </div>
+                        <div style="background: #fff3e0; padding: 15px; border-radius: 8px; text-align: center;">
+                            <strong>GraphX</strong><br>
+                            <small>Graph computation</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <button class="collapsible">Spark Features Summary 🌟</button>
+            <div class="content">
+                <div class="content-inner">
+                    <ul style="list-style-type: disc; padding-left: 30px;">
+                        <li><strong>Speed:</strong> 100x faster than MapReduce through in-memory processing</li>
+                        <li><strong>Powerful Caching:</strong> Cache frequently used data in memory</li>
+                        <li><strong>Deployment Flexibility:</strong> Run on YARN, Mesos, Kubernetes, or Standalone</li>
+                        <li><strong>Real-Time Processing:</strong> Low latency with in-memory computation</li>
+                        <li><strong>Polyglot:</strong> APIs in Java, Scala, Python, R, SQL</li>
+                        <li><strong>Scalability:</strong> Process petabytes by distributing across cluster nodes</li>
+                        <li><strong>Storage Flexibility:</strong> Works with HDFS, S3, local files, databases</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
         <div style="background: white; padding: 30px; border-radius: 15px; margin-top: 30px; text-align: center;">
-            <h3 style="color: #e25822; margin-bottom: 15px;">🎉 Day 1 Complete!</h3>
-            <p style="font-size: 1.1em; color: #666;">Great job learning the fundamentals of Apache Spark!</p>
-            <p style="margin-top: 10px; color: #999;">Keep uploading your notes as you learn more topics—this page will grow with you!</p>
+            <h3 style="color: #e25822; margin-bottom: 15px;">🎉 Day 1 Complete - UPDATED!</h3>
+            <p style="font-size: 1.1em; color: #666;">You've now covered ALL fundamentals including architecture, deployment, and real examples!</p>
+            <div style="background: #e8f5e9; padding: 20px; border-radius: 10px; margin-top: 20px;">
+                <h4 style="color: #2e7d32; margin-bottom: 10px;">📊 Topics Mastered:</h4>
+                <p style="color: #666;">18 core concepts • Architecture • Deployment Modes • Cluster Managers • Real Code Examples</p>
+            </div>
+            <p style="margin-top: 20px; color: #999;">Keep uploading your notes as you learn more topics—this page will grow with you!</p>
         </div>
     </div>
 
@@ -921,6 +1351,33 @@
                 narrowBtn.classList.remove('active');
                 wideContent.classList.add('active');
                 narrowContent.classList.remove('active');
+            }
+        }
+        
+        // Toggle deployment modes
+        function toggleDeployment(mode) {
+            // Get all toggle buttons in the deployment section
+            var buttons = document.querySelectorAll('.section:nth-last-of-type(4) .toggle-btn');
+            var clientContent = document.getElementById('client-mode');
+            var clusterContent = document.getElementById('cluster-mode');
+            var localContent = document.getElementById('local-mode');
+            
+            // Remove active from all buttons and contents
+            buttons.forEach(btn => btn.classList.remove('active'));
+            clientContent.classList.remove('active');
+            clusterContent.classList.remove('active');
+            localContent.classList.remove('active');
+            
+            // Add active to selected
+            if (mode === 'client') {
+                buttons[0].classList.add('active');
+                clientContent.classList.add('active');
+            } else if (mode === 'cluster') {
+                buttons[1].classList.add('active');
+                clusterContent.classList.add('active');
+            } else {
+                buttons[2].classList.add('active');
+                localContent.classList.add('active');
             }
         }
         
