@@ -1,0 +1,940 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Apache Spark - Day 1 | Data Engineering Journey</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: #333;
+            line-height: 1.6;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        header {
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            margin-bottom: 30px;
+            text-align: center;
+        }
+        
+        header h1 {
+            color: #e25822;
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+        
+        header .subtitle {
+            color: #666;
+            font-size: 1.1em;
+        }
+        
+        .progress-bar {
+            width: 100%;
+            height: 8px;
+            background: #e0e0e0;
+            border-radius: 10px;
+            margin-top: 20px;
+            overflow: hidden;
+        }
+        
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #e25822, #f39c12);
+            width: 10%;
+            border-radius: 10px;
+            animation: pulse 2s ease-in-out infinite;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.7; }
+        }
+        
+        .nav-pills {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+        
+        .nav-pill {
+            background: white;
+            padding: 10px 20px;
+            border-radius: 25px;
+            cursor: pointer;
+            transition: all 0.3s;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+        }
+        
+        .nav-pill:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+            background: #e25822;
+            color: white;
+        }
+        
+        .section {
+            background: white;
+            padding: 30px;
+            margin-bottom: 25px;
+            border-radius: 15px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.15);
+            transition: all 0.3s;
+        }
+        
+        .section:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+        
+        .section h2 {
+            color: #e25822;
+            margin-bottom: 20px;
+            font-size: 1.8em;
+            border-left: 5px solid #e25822;
+            padding-left: 15px;
+        }
+        
+        .comparison {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin: 20px 0;
+        }
+        
+        .comparison-box {
+            padding: 20px;
+            border-radius: 10px;
+            transition: all 0.3s;
+        }
+        
+        .hadoop-box {
+            background: #ffe6e6;
+            border: 2px solid #ff4444;
+        }
+        
+        .spark-box {
+            background: #e6f7ff;
+            border: 2px solid #0088cc;
+        }
+        
+        .comparison-box h3 {
+            margin-bottom: 15px;
+        }
+        
+        .comparison-box ul {
+            list-style: none;
+            padding-left: 0;
+        }
+        
+        .comparison-box li {
+            padding: 8px 0;
+            padding-left: 25px;
+            position: relative;
+        }
+        
+        .comparison-box li:before {
+            content: "×";
+            position: absolute;
+            left: 0;
+            color: #ff4444;
+            font-weight: bold;
+            font-size: 1.5em;
+        }
+        
+        .spark-box li:before {
+            content: "✓";
+            color: #00cc44;
+        }
+        
+        .collapsible {
+            background: #f39c12;
+            color: white;
+            cursor: pointer;
+            padding: 15px;
+            width: 100%;
+            border: none;
+            text-align: left;
+            outline: none;
+            font-size: 1.1em;
+            border-radius: 8px;
+            margin: 10px 0;
+            transition: all 0.3s;
+            font-weight: bold;
+        }
+        
+        .collapsible:hover {
+            background: #e67e22;
+        }
+        
+        .collapsible:after {
+            content: '▼';
+            float: right;
+            transition: transform 0.3s;
+        }
+        
+        .collapsible.active:after {
+            transform: rotate(180deg);
+        }
+        
+        .content {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease-out;
+            background: #f9f9f9;
+            border-radius: 0 0 8px 8px;
+        }
+        
+        .content-inner {
+            padding: 20px;
+        }
+        
+        .diagram {
+            background: #f5f5f5;
+            padding: 30px;
+            border-radius: 10px;
+            margin: 20px 0;
+            text-align: center;
+        }
+        
+        .rdd-visual {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            flex-wrap: wrap;
+            margin: 20px 0;
+        }
+        
+        .rdd-partition {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            padding: 20px;
+            border-radius: 10px;
+            min-width: 100px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+            animation: float 3s ease-in-out infinite;
+        }
+        
+        .rdd-partition:nth-child(2) {
+            animation-delay: 0.5s;
+        }
+        
+        .rdd-partition:nth-child(3) {
+            animation-delay: 1s;
+        }
+        
+        @keyframes float {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+        }
+        
+        .tooltip {
+            position: relative;
+            display: inline-block;
+            border-bottom: 2px dotted #e25822;
+            cursor: help;
+            color: #e25822;
+            font-weight: bold;
+        }
+        
+        .tooltip .tooltiptext {
+            visibility: hidden;
+            width: 300px;
+            background-color: #333;
+            color: #fff;
+            text-align: center;
+            border-radius: 6px;
+            padding: 10px;
+            position: absolute;
+            z-index: 1;
+            bottom: 125%;
+            left: 50%;
+            margin-left: -150px;
+            opacity: 0;
+            transition: opacity 0.3s;
+            font-weight: normal;
+        }
+        
+        .tooltip:hover .tooltiptext {
+            visibility: visible;
+            opacity: 1;
+        }
+        
+        .toggle-container {
+            display: flex;
+            gap: 20px;
+            margin: 20px 0;
+        }
+        
+        .toggle-btn {
+            flex: 1;
+            padding: 15px;
+            border: 2px solid #e25822;
+            background: white;
+            cursor: pointer;
+            border-radius: 8px;
+            transition: all 0.3s;
+            text-align: center;
+            font-weight: bold;
+        }
+        
+        .toggle-btn.active {
+            background: #e25822;
+            color: white;
+        }
+        
+        .toggle-content {
+            display: none;
+            padding: 20px;
+            background: #f9f9f9;
+            border-radius: 8px;
+            margin-top: 10px;
+        }
+        
+        .toggle-content.active {
+            display: block;
+            animation: fadeIn 0.5s;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .dag-visual {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 20px;
+            margin: 30px 0;
+        }
+        
+        .dag-node {
+            background: white;
+            border: 3px solid #e25822;
+            padding: 15px 30px;
+            border-radius: 10px;
+            font-weight: bold;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+        }
+        
+        .dag-arrow {
+            width: 3px;
+            height: 30px;
+            background: #e25822;
+            position: relative;
+        }
+        
+        .dag-arrow:after {
+            content: '';
+            position: absolute;
+            bottom: -10px;
+            left: -5px;
+            width: 0;
+            height: 0;
+            border-left: 6px solid transparent;
+            border-right: 6px solid transparent;
+            border-top: 10px solid #e25822;
+        }
+        
+        .analogy-box {
+            background: linear-gradient(135deg, #ffeaa7, #fdcb6e);
+            padding: 20px;
+            border-radius: 10px;
+            margin: 20px 0;
+            border-left: 5px solid #f39c12;
+        }
+        
+        .analogy-box h4 {
+            color: #d63031;
+            margin-bottom: 10px;
+        }
+        
+        .quiz {
+            background: #e8f5e9;
+            padding: 25px;
+            border-radius: 10px;
+            margin-top: 30px;
+        }
+        
+        .quiz h3 {
+            color: #2e7d32;
+            margin-bottom: 20px;
+        }
+        
+        .quiz-question {
+            background: white;
+            padding: 15px;
+            margin: 15px 0;
+            border-radius: 8px;
+            border-left: 4px solid #4caf50;
+        }
+        
+        .quiz-answer {
+            display: none;
+            background: #c8e6c9;
+            padding: 10px;
+            margin-top: 10px;
+            border-radius: 5px;
+            font-style: italic;
+        }
+        
+        .show-answer {
+            background: #4caf50;
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-top: 10px;
+            transition: all 0.3s;
+        }
+        
+        .show-answer:hover {
+            background: #45a049;
+        }
+        
+        .highlight {
+            background: linear-gradient(120deg, #f39c12 0%, #f39c12 100%);
+            background-repeat: no-repeat;
+            background-size: 100% 40%;
+            background-position: 0 85%;
+            padding: 2px 0;
+        }
+        
+        @media (max-width: 768px) {
+            .comparison {
+                grid-template-columns: 1fr;
+            }
+            
+            header h1 {
+                font-size: 1.8em;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🔥 Apache Spark - Day 1</h1>
+            <p class="subtitle">Your Interactive Data Engineering Journey</p>
+            <div class="progress-bar">
+                <div class="progress-fill"></div>
+            </div>
+            <p style="margin-top: 10px; color: #999;">Topic 1 of many...</p>
+        </header>
+
+        <div class="nav-pills">
+            <div class="nav-pill">📚 Spark Basics</div>
+            <div class="nav-pill">🔜 Kafka (Coming Soon)</div>
+            <div class="nav-pill">🔜 Airflow (Coming Soon)</div>
+        </div>
+
+        <!-- Section 1: Problems with Hadoop MapReduce -->
+        <div class="section">
+            <h2>1️⃣ Problems with Hadoop MapReduce</h2>
+            
+            <div class="comparison">
+                <div class="comparison-box hadoop-box">
+                    <h3>⚠️ MapReduce Issues</h3>
+                    <ul>
+                        <li>Disk-based processing (SLOW!)</li>
+                        <li>Writes intermediate results to HDFS</li>
+                        <li>Only batch processing</li>
+                        <li>Limited to Map and Reduce operations</li>
+                        <li>High latency for iterative algorithms</li>
+                        <li>Not suitable for real-time processing</li>
+                    </ul>
+                </div>
+                
+                <div class="comparison-box spark-box">
+                    <h3>✨ How Spark Solved It</h3>
+                    <ul>
+                        <li>In-memory processing (100x faster!)</li>
+                        <li>Keeps data in RAM across operations</li>
+                        <li>Batch + Streaming + Interactive</li>
+                        <li>Rich set of operations (80+)</li>
+                        <li>Perfect for iterative ML algorithms</li>
+                        <li>Near real-time processing capability</li>
+                    </ul>
+                </div>
+            </div>
+            
+            <div class="analogy-box">
+                <h4>💡 Real-World Analogy</h4>
+                <p><strong>MapReduce</strong> is like writing notes on paper, filing them in a cabinet after each thought, then pulling them out again to continue—lots of back and forth!</p>
+                <p><strong>Spark</strong> is like keeping all your notes on a whiteboard in front of you—everything stays in view, ready to use instantly.</p>
+            </div>
+        </div>
+
+        <!-- Section 2: What is Apache Spark -->
+        <div class="section">
+            <h2>2️⃣ What is Apache Spark?</h2>
+            <p style="font-size: 1.1em; margin-bottom: 15px;">
+                Apache Spark is a <span class="highlight">unified analytics engine</span> for large-scale data processing with built-in modules for:
+            </p>
+            
+            <button class="collapsible">Click to reveal Spark's key features 🔍</button>
+            <div class="content">
+                <div class="content-inner">
+                    <ul style="list-style-type: disc; padding-left: 30px;">
+                        <li><strong>Speed:</strong> Up to 100x faster than MapReduce due to in-memory computation</li>
+                        <li><strong>Ease of Use:</strong> Simple APIs in Java, Scala, Python, R, and SQL</li>
+                        <li><strong>Generality:</strong> Combines SQL, streaming, ML, and graph processing</li>
+                        <li><strong>Runs Everywhere:</strong> Hadoop, Kubernetes, standalone, or cloud</li>
+                    </ul>
+                </div>
+            </div>
+            
+            <div class="diagram">
+                <h4>Spark Ecosystem</h4>
+                <p>Spark Core → Spark SQL → Spark Streaming → MLlib → GraphX</p>
+            </div>
+        </div>
+
+        <!-- Section 3: Spark Core Engine -->
+        <div class="section">
+            <h2>3️⃣ Spark Core Engine</h2>
+            <p>The <span class="tooltip">Spark Core<span class="tooltiptext">The foundation of Spark that provides basic I/O functionality, task scheduling, and memory management</span></span> is the execution engine that powers all Spark applications.</p>
+            
+            <button class="collapsible">What does Spark Core do? 🛠️</button>
+            <div class="content">
+                <div class="content-inner">
+                    <ul style="list-style-type: disc; padding-left: 30px;">
+                        <li><strong>Task Scheduling:</strong> Distributes tasks across the cluster</li>
+                        <li><strong>Memory Management:</strong> Handles in-memory computation efficiently</li>
+                        <li><strong>Fault Recovery:</strong> Automatically recovers from failures using lineage</li>
+                        <li><strong>I/O Operations:</strong> Reads from and writes to various storage systems</li>
+                        <li><strong>RDD Abstraction:</strong> Provides the foundation for distributed data processing</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- Section 4: RDD in Spark -->
+        <div class="section">
+            <h2>4️⃣ RDD (Resilient Distributed Dataset)</h2>
+            <p style="font-size: 1.1em; margin-bottom: 20px;">
+                The fundamental data structure of Spark—an <span class="highlight">immutable, distributed collection</span> of objects.
+            </p>
+            
+            <div class="diagram">
+                <h4>RDD Partitioning Visual</h4>
+                <div class="rdd-visual">
+                    <div class="rdd-partition">Partition 1<br/>Data chunk</div>
+                    <div class="rdd-partition">Partition 2<br/>Data chunk</div>
+                    <div class="rdd-partition">Partition 3<br/>Data chunk</div>
+                </div>
+                <p style="margin-top: 15px; color: #666;">Each partition is processed in parallel across different nodes</p>
+            </div>
+            
+            <button class="collapsible">RDD Key Properties 🔑</button>
+            <div class="content">
+                <div class="content-inner">
+                    <ul style="list-style-type: disc; padding-left: 30px;">
+                        <li><strong>Resilient:</strong> Fault-tolerant, can recreate lost partitions using lineage</li>
+                        <li><strong>Distributed:</strong> Data is split across multiple nodes in the cluster</li>
+                        <li><strong>Dataset:</strong> Collection of partitioned data</li>
+                        <li><strong>Immutable:</strong> Once created, cannot be changed (transformations create new RDDs)</li>
+                        <li><strong>Lazy Evaluated:</strong> Computations don't execute until an action is called</li>
+                    </ul>
+                </div>
+            </div>
+            
+            <div class="analogy-box">
+                <h4>💡 Real-World Analogy</h4>
+                <p><strong>RDD</strong> is like a massive book split into chapters (partitions), where each chapter is given to a different person to read simultaneously. If someone loses their chapter, you can recreate it from the original book (lineage).</p>
+            </div>
+        </div>
+
+        <!-- Section 5: Lazy Evaluation -->
+        <div class="section">
+            <h2>5️⃣ Lazy Evaluation</h2>
+            <p>Spark doesn't execute <span class="tooltip">transformations<span class="tooltiptext">Operations that create a new RDD from an existing one, like map() or filter()</span></span> immediately—it waits until an <span class="tooltip">action<span class="tooltiptext">Operations that trigger execution and return results, like count() or collect()</span></span> is called!</p>
+            
+            <button class="collapsible">Why Lazy Evaluation? 🤔</button>
+            <div class="content">
+                <div class="content-inner">
+                    <ul style="list-style-type: disc; padding-left: 30px;">
+                        <li><strong>Optimization:</strong> Spark can optimize the entire execution plan before running</li>
+                        <li><strong>Efficiency:</strong> Avoids unnecessary computations</li>
+                        <li><strong>Pipelining:</strong> Multiple transformations can be combined into one pass</li>
+                        <li><strong>Resource Management:</strong> Better memory and CPU utilization</li>
+                    </ul>
+                    
+                    <div style="background: white; padding: 15px; border-radius: 5px; margin-top: 15px; font-family: monospace;">
+                        rdd = sc.textFile("data.txt") &nbsp;&nbsp;&nbsp;# No execution yet!<br/>
+                        filtered = rdd.filter(lambda x: "error" in x) &nbsp;&nbsp;&nbsp;# Still waiting...<br/>
+                        count = filtered.count() &nbsp;&nbsp;&nbsp;# NOW it executes everything!
+                    </div>
+                </div>
+            </div>
+            
+            <div class="analogy-box">
+                <h4>💡 Real-World Analogy</h4>
+                <p>Imagine you're planning a road trip. You don't start driving after each decision (lazy). Instead, you plan the entire route, optimize for shortest path, then execute the journey (action).</p>
+            </div>
+        </div>
+
+        <!-- Section 6: Partitioning and In-Memory Computation -->
+        <div class="section">
+            <h2>6️⃣ Partitioning & In-Memory Computation</h2>
+            
+            <div class="comparison">
+                <div class="comparison-box hadoop-box">
+                    <h3>💾 Disk-Based (MapReduce)</h3>
+                    <ul>
+                        <li>Reads from disk</li>
+                        <li>Writes results to disk</li>
+                        <li>Repeats for each operation</li>
+                        <li>Slow I/O operations</li>
+                    </ul>
+                </div>
+                
+                <div class="comparison-box spark-box">
+                    <h3>⚡ In-Memory (Spark)</h3>
+                    <ul>
+                        <li>Keeps data in RAM</li>
+                        <li>Operates on cached data</li>
+                        <li>Only writes final results</li>
+                        <li>Lightning-fast processing</li>
+                    </ul>
+                </div>
+            </div>
+            
+            <button class="collapsible">How does partitioning work? 🧩</button>
+            <div class="content">
+                <div class="content-inner">
+                    <p><strong>Partitioning</strong> divides your data into smaller chunks that can be processed in parallel across multiple nodes.</p>
+                    <ul style="list-style-type: disc; padding-left: 30px; margin-top: 10px;">
+                        <li>Default partitions = number of cores in cluster</li>
+                        <li>You can manually control with <code>repartition()</code> or <code>coalesce()</code></li>
+                        <li>Better partitioning = better parallelism = faster processing</li>
+                        <li>Too few partitions → underutilized cluster</li>
+                        <li>Too many partitions → overhead costs</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- Section 7: How Spark Performs Data Partitioning -->
+        <div class="section">
+            <h2>7️⃣ How Spark Performs Data Partitioning</h2>
+            
+            <button class="collapsible">Partitioning Strategies 📊</button>
+            <div class="content">
+                <div class="content-inner">
+                    <h4>1. Hash Partitioning (Default)</h4>
+                    <p>Uses a hash function on the key to determine partition</p>
+                    <div style="background: #f5f5f5; padding: 10px; border-radius: 5px; margin: 10px 0; font-family: monospace;">
+                        partition_id = hash(key) % number_of_partitions
+                    </div>
+                    
+                    <h4 style="margin-top: 20px;">2. Range Partitioning</h4>
+                    <p>Divides data into partitions based on key ranges (sorted)</p>
+                    
+                    <h4 style="margin-top: 20px;">3. Custom Partitioning</h4>
+                    <p>You define your own logic for how data should be partitioned</p>
+                </div>
+            </div>
+            
+            <div class="analogy-box">
+                <h4>💡 Real-World Analogy</h4>
+                <p>Partitioning is like organizing a library. You can organize books by author (hash), by genre ranges (range), or create your own system (custom). Good organization means faster access!</p>
+            </div>
+        </div>
+
+        <!-- Section 8: Transformations in Spark -->
+        <div class="section">
+            <h2>8️⃣ Transformations in Spark</h2>
+            <p>Operations that create a new RDD from an existing one. Remember: <span class="highlight">lazy evaluation</span>—they don't execute immediately!</p>
+            
+            <div class="toggle-container">
+                <div class="toggle-btn active" onclick="toggleTransformation('narrow')">
+                    Narrow Transformations
+                </div>
+                <div class="toggle-btn" onclick="toggleTransformation('wide')">
+                    Wide Transformations
+                </div>
+            </div>
+            
+            <div id="narrow-content" class="toggle-content active">
+                <h4>✅ Narrow Transformations</h4>
+                <p><strong>Each input partition contributes to ONLY ONE output partition</strong></p>
+                <ul style="list-style-type: disc; padding-left: 30px; margin-top: 10px;">
+                    <li><code>map()</code> - Apply function to each element</li>
+                    <li><code>filter()</code> - Keep only matching elements</li>
+                    <li><code>flatMap()</code> - Map then flatten results</li>
+                    <li><code>union()</code> - Combine two RDDs</li>
+                </ul>
+                <p style="margin-top: 15px; background: #e8f5e9; padding: 10px; border-radius: 5px;">
+                    ⚡ <strong>Fast!</strong> No data shuffling across network
+                </p>
+            </div>
+            
+            <div id="wide-content" class="toggle-content">
+                <h4>⚠️ Wide Transformations</h4>
+                <p><strong>Each input partition contributes to MULTIPLE output partitions</strong></p>
+                <ul style="list-style-type: disc; padding-left: 30px; margin-top: 10px;">
+                    <li><code>groupByKey()</code> - Group by key</li>
+                    <li><code>reduceByKey()</code> - Reduce by key</li>
+                    <li><code>join()</code> - Join two RDDs</li>
+                    <li><code>distinct()</code> - Remove duplicates</li>
+                    <li><code>repartition()</code> - Change partitioning</li>
+                </ul>
+                <p style="margin-top: 15px; background: #fff3cd; padding: 10px; border-radius: 5px;">
+                    🐌 <strong>Slower!</strong> Requires shuffling data across the network
+                </p>
+            </div>
+            
+            <div class="analogy-box" style="margin-top: 20px;">
+                <h4>💡 Real-World Analogy</h4>
+                <p><strong>Narrow:</strong> Each person works on their own document independently—no coordination needed.</p>
+                <p><strong>Wide:</strong> Everyone needs to share and reorganize their work—requires coordination and communication.</p>
+            </div>
+        </div>
+
+        <!-- Section 9: Actions in Spark -->
+        <div class="section">
+            <h2>9️⃣ Actions in Spark</h2>
+            <p>Operations that <span class="highlight">trigger execution</span> and return results to the driver or write to storage.</p>
+            
+            <button class="collapsible">Common Actions 🎬</button>
+            <div class="content">
+                <div class="content-inner">
+                    <ul style="list-style-type: disc; padding-left: 30px;">
+                        <li><code>collect()</code> - Return all elements to driver (careful with large data!)</li>
+                        <li><code>count()</code> - Return the number of elements</li>
+                        <li><code>first()</code> - Return the first element</li>
+                        <li><code>take(n)</code> - Return first n elements</li>
+                        <li><code>reduce()</code> - Aggregate elements using a function</li>
+                        <li><code>saveAsTextFile()</code> - Write to file system</li>
+                        <li><code>foreach()</code> - Apply function to each element</li>
+                    </ul>
+                    
+                    <p style="margin-top: 15px; background: #ffebee; padding: 10px; border-radius: 5px;">
+                        ⚠️ <strong>Remember:</strong> Actions trigger the execution of ALL pending transformations in the DAG!
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Section 10: Lineage Graph/DAG -->
+        <div class="section">
+            <h2>🔟 Lineage Graph (DAG - Directed Acyclic Graph)</h2>
+            <p>Spark maintains a <span class="tooltip">DAG<span class="tooltiptext">A graph showing the sequence of computations with no loops—allows Spark to optimize and recover from failures</span></span> that records the sequence of transformations applied to data.</p>
+            
+            <div class="diagram">
+                <h4>Sample DAG Visualization</h4>
+                <div class="dag-visual">
+                    <div class="dag-node">RDD 1: Read Data</div>
+                    <div class="dag-arrow"></div>
+                    <div class="dag-node">RDD 2: Filter</div>
+                    <div class="dag-arrow"></div>
+                    <div class="dag-node">RDD 3: Map</div>
+                    <div class="dag-arrow"></div>
+                    <div class="dag-node">Action: Count</div>
+                </div>
+            </div>
+            
+            <button class="collapsible">Why is DAG important? 📈</button>
+            <div class="content">
+                <div class="content-inner">
+                    <ul style="list-style-type: disc; padding-left: 30px;">
+                        <li><strong>Optimization:</strong> Spark can optimize the execution plan before running</li>
+                        <li><strong>Fault Tolerance:</strong> If a partition is lost, Spark can recreate it using the lineage</li>
+                        <li><strong>Lazy Evaluation:</strong> Builds the entire plan before execution</li>
+                        <li><strong>Pipeline Fusion:</strong> Combines multiple operations for efficiency</li>
+                    </ul>
+                </div>
+            </div>
+            
+            <div class="analogy-box">
+                <h4>💡 Real-World Analogy</h4>
+                <p>DAG is like a recipe. It lists all the steps (transformations) you need to follow to make a dish (action). If you burn the dish, you can follow the recipe again to recreate it (fault recovery).</p>
+            </div>
+        </div>
+
+        <!-- Section 11: Job, Stage, and Task -->
+        <div class="section">
+            <h2>1️⃣1️⃣ Job, Stage, and Task in Spark</h2>
+            
+            <div class="diagram">
+                <h4>Execution Hierarchy</h4>
+                <div style="padding: 20px; background: white; border-radius: 10px;">
+                    <div style="font-size: 1.5em; margin: 10px 0;">
+                        📋 <strong>Job</strong> (triggered by an action)
+                    </div>
+                    <div style="font-size: 1.3em; margin: 10px 0 10px 40px;">
+                        ↳ 📊 <strong>Stage 1</strong> (sequence of narrow transformations)
+                    </div>
+                    <div style="font-size: 1.1em; margin: 10px 0 10px 80px;">
+                        ↳ ⚙️ <strong>Task 1</strong> (work on partition 1)
+                    </div>
+                    <div style="font-size: 1.1em; margin: 10px 0 10px 80px;">
+                        ↳ ⚙️ <strong>Task 2</strong> (work on partition 2)
+                    </div>
+                    <div style="font-size: 1.3em; margin: 10px 0 10px 40px;">
+                        ↳ 📊 <strong>Stage 2</strong> (after shuffle/wide transformation)
+                    </div>
+                    <div style="font-size: 1.1em; margin: 10px 0 10px 80px;">
+                        ↳ ⚙️ <strong>Task 3</strong> (work on partition 1)
+                    </div>
+                    <div style="font-size: 1.1em; margin: 10px 0 10px 80px;">
+                        ↳ ⚙️ <strong>Task 4</strong> (work on partition 2)
+                    </div>
+                </div>
+            </div>
+            
+            <button class="collapsible">Detailed Breakdown 🔍</button>
+            <div class="content">
+                <div class="content-inner">
+                    <h4>📋 Job</h4>
+                    <ul style="list-style-type: disc; padding-left: 30px;">
+                        <li>Created when an <strong>action</strong> is called</li>
+                        <li>Consists of one or more stages</li>
+                        <li>Example: Calling <code>count()</code> creates a job</li>
+                    </ul>
+                    
+                    <h4 style="margin-top: 20px;">📊 Stage</h4>
+                    <ul style="list-style-type: disc; padding-left: 30px;">
+                        <li>A set of tasks that can be executed together</li>
+                        <li>Stages are split at <strong>wide transformations</strong> (shuffle boundaries)</li>
+                        <li>Narrow transformations are grouped into the same stage</li>
+                    </ul>
+                    
+                    <h4 style="margin-top: 20px;">⚙️ Task</h4>
+                    <ul style="list-style-type: disc; padding-left: 30px;">
+                        <li>The smallest unit of work</li>
+                        <li>One task per partition</li>
+                        <li>Tasks run in parallel across executors</li>
+                        <li>If you have 100 partitions, you'll have 100 tasks per stage</li>
+                    </ul>
+                </div>
+            </div>
+            
+            <div class="analogy-box">
+                <h4>💡 Real-World Analogy</h4>
+                <p><strong>Job:</strong> Building a house (the entire project)</p>
+                <p><strong>Stage:</strong> Foundation, framing, roofing (major phases)</p>
+                <p><strong>Task:</strong> Each worker laying bricks on their section (individual work units)</p>
+            </div>
+        </div>
+
+        <!-- Quiz Section -->
+        <div class="quiz">
+            <h3>🎯 Self-Check Questions</h3>
+            
+            <div class="quiz-question">
+                <strong>Q1:</strong> What is the main advantage of Spark over MapReduce?
+                <button class="show-answer" onclick="toggleAnswer(this)">Show Answer</button>
+                <div class="quiz-answer">
+                    <strong>Answer:</strong> In-memory computation! Spark keeps data in RAM between operations instead of writing to disk, making it up to 100x faster for iterative algorithms.
+                </div>
+            </div>
+            
+            <div class="quiz-question">
+                <strong>Q2:</strong> What's the difference between a transformation and an action?
+                <button class="show-answer" onclick="toggleAnswer(this)">Show Answer</button>
+                <div class="quiz-answer">
+                    <strong>Answer:</strong> Transformations (like map, filter) are lazy and create new RDDs. Actions (like count, collect) trigger execution and return results to the driver.
+                </div>
+            </div>
+            
+            <div class="quiz-question">
+                <strong>Q3:</strong> Why does Spark use lazy evaluation?
+                <button class="show-answer" onclick="toggleAnswer(this)">Show Answer</button>
+                <div class="quiz-answer">
+                    <strong>Answer:</strong> To optimize the execution plan! Spark can combine multiple transformations, avoid unnecessary computations, and create the most efficient execution strategy before running anything.
+                </div>
+            </div>
+            
+            <div class="quiz-question">
+                <strong>Q4:</strong> What's the difference between narrow and wide transformations?
+                <button class="show-answer" onclick="toggleAnswer(this)">Show Answer</button>
+                <div class="quiz-answer">
+                    <strong>Answer:</strong> Narrow transformations (map, filter) don't require shuffling—each input partition maps to one output partition. Wide transformations (groupByKey, join) require shuffling data across the network and create new stages.
+                </div>
+            </div>
+            
+            <div class="quiz-question">
+                <strong>Q5:</strong> How does Spark achieve fault tolerance?
+                <button class="show-answer" onclick="toggleAnswer(this)">Show Answer</button>
+                <div class="quiz-answer">
+                    <strong>Answer:</strong> Through lineage! Spark tracks the sequence of transformations (DAG) that created each RDD. If a partition is lost, it can be recreated by recomputing it from the original data using the recorded lineage.
+                </div>
+            </div>
+        </div>
+
+        <div style="background: white; padding: 30px; border-radius: 15px; margin-top: 30px; text-align: center;">
+            <h3 style="color: #e25822; margin-bottom: 15px;">🎉 Day 1 Complete!</h3>
+            <p style="font-size: 1.1em; color: #666;">Great job learning the fundamentals of Apache Spark!</p>
+            <p style="margin-top: 10px; color: #999;">Keep uploading your notes as you learn more topics—this page will grow with you!</p>
+        </div>
+    </div>
+
+    <script>
+        // Collapsible sections
+        var coll = document.getElementsByClassName("collapsible");
+        for (var i = 0; i < coll.length; i++) {
+            coll[i].addEventListener("click", function() {
+                this.classList.toggle("active");
+                var content = this.nextElementSibling;
+                if (content.style.maxHeight) {
+                    content.style.maxHeight = null;
+                } else {
+                    content.style.maxHeight = content.scrollHeight + "px";
+                }
+            });
+        }
+        
+        // Toggle transformations
+        function toggleTransformation(type) {
+            var narrowBtn = document.querySelector('.toggle-btn:first-child');
+            var wideBtn = document.querySelector('.toggle-btn:last-child');
+            var narrowContent = document.getElementById('narrow-content');
+            var wideContent = document.getElementById('wide-content');
+            
+            if (type === 'narrow') {
+                narrowBtn.classList.add('active');
+                wideBtn.classList.remove('active');
+                narrowContent.classList.add('active');
+                wideContent.classList.remove('active');
+            } else {
+                wideBtn.classList.add('active');
+                narrowBtn.classList.remove('active');
+                wideContent.classList.add('active');
+                narrowContent.classList.remove('active');
+            }
+        }
+        
+        // Toggle quiz answers
+        function toggleAnswer(button) {
+            var answer = button.nextElementSibling;
+            if (answer.style.display === "block") {
+                answer.style.display = "none";
+                button.textContent = "Show Answer";
+            } else {
+                answer.style.display = "block";
+                button.textContent = "Hide Answer";
+            }
+        }
+    </script>
+</body>
+</html>
